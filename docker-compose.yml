@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  spotidial-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spotidial-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - AppSettings__Mqtt__BrokerHost=${MQTT_BROKER_HOST}
+      - AppSettings__Mqtt__BrokerPort=${MQTT_BROKER_PORT:-1883}
+      - AppSettings__Mqtt__ClientId=${MQTT_CLIENT_ID:-SpotiDialBackend}
+      - AppSettings__Mqtt__Username=${MQTT_USERNAME}
+      - AppSettings__Mqtt__Password=${MQTT_PASSWORD}
+      - AppSettings__Mqtt__CommandTopic=${MQTT_COMMAND_TOPIC:-spotidial/commands}
+      - AppSettings__Mqtt__StatusTopic=${MQTT_STATUS_TOPIC:-spotidial/status}
+      - AppSettings__Mqtt__ImageTopic=${MQTT_IMAGE_TOPIC:-spotidial/image}
+      - AppSettings__Spotify__ClientId=${SPOTIFY_CLIENT_ID}
+      - AppSettings__Spotify__ClientSecret=${SPOTIFY_CLIENT_SECRET}
+      - AppSettings__Spotify__RefreshToken=${SPOTIFY_REFRESH_TOKEN}
+      - AppSettings__Spotify__PollingIntervalMs=${SPOTIFY_POLLING_INTERVAL_MS:-1000}
+    networks:
+      - spotidial-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Include MQTT broker if you don't have one running
+  # mosquitto:
+  #   image: eclipse-mosquitto:2
+  #   container_name: mosquitto
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1883:1883"
+  #     - "9001:9001"
+  #   volumes:
+  #     - ./mosquitto/config:/mosquitto/config
+  #     - ./mosquitto/data:/mosquitto/data
+  #     - ./mosquitto/log:/mosquitto/log
+  #   networks:
+  #     - spotidial-network
+
+networks:
+  spotidial-network:
+    driver: bridge

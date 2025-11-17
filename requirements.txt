@@ -1,0 +1,9 @@
+c# backend app for using ESP32 M5Dial device to control Spotify
+ this app will maintain a MQTT connection with a ESP32 device
+ will get commands from ESP32 such as change playlist, album, change song, change volume, play, pause and send them to spotify api
+ will detect song changes and send new song info to device
+ send playlist, album, song pictures to device
+ get connection info from environment
+ will be dockerized
+ will use docker-compose configuration to inject env files
+ will generate example env
