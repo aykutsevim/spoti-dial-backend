@@ -101,6 +101,16 @@ public class CommandProcessorService : BackgroundService
                     }
                     break;
 
+                case Commands.GetPlaylists:
+                    var playlists = await _spotifyService.GetUserPlaylistsAsync();
+                    await _mqttService.PublishPlaylistsAsync(playlists);
+                    break;
+
+                case Commands.GetAlbums:
+                    var albums = await _spotifyService.GetUserAlbumsAsync();
+                    await _mqttService.PublishAlbumsAsync(albums);
+                    break;
+
                 default:
                     _logger.LogWarning("Unknown command: {Command}", command.Command);
                     break;

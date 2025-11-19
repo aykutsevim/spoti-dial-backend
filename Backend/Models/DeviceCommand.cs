@@ -17,4 +17,6 @@ public static class Commands
     public const string SetVolume = "set_volume";
     public const string ChangePlaylist = "change_playlist";
     public const string ChangeAlbum = "change_album";
+    public const string GetPlaylists = "get_playlists";
+    public const string GetAlbums = "get_albums";
 }

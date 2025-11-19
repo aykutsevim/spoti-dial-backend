@@ -253,4 +253,135 @@ public class SpotifyService
             return null;
         }
     }
+
+    public async Task<List<PlaylistInfo>> GetUserPlaylistsAsync()
+    {
+        if (_spotify == null) return new List<PlaylistInfo>();
+
+        try
+        {
+            var playlists = new List<PlaylistInfo>();
+            var currentPlaylists = await _spotify.Playlists.CurrentUsers();
+
+            await foreach (var playlist in _spotify.Paginate(currentPlaylists))
+            {
+                playlists.Add(new PlaylistInfo
+                {
+                    Id = playlist.Id ?? string.Empty,
+                    Name = playlist.Name ?? string.Empty,
+                    Description = playlist.Description,
+                    TrackCount = playlist.Tracks?.Total ?? 0,
+                    ImageUrl = playlist.Images?.FirstOrDefault()?.Url,
+                    Owner = playlist.Owner?.DisplayName ?? string.Empty,
+                    IsPublic = playlist.Public ?? false,
+                    Uri = playlist.Uri ?? string.Empty
+                });
+            }
+
+            _logger.LogInformation("Retrieved {Count} playlists", playlists.Count);
+            return playlists;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user playlists");
+            return new List<PlaylistInfo>();
+        }
+    }
+
+    public async Task<PlaylistInfo?> GetPlaylistAsync(string playlistId)
+    {
+        if (_spotify == null) return null;
+
+        try
+        {
+            var playlist = await _spotify.Playlists.Get(playlistId);
+            if (playlist == null) return null;
+
+            var playlistInfo = new PlaylistInfo
+            {
+                Id = playlist.Id ?? string.Empty,
+                Name = playlist.Name ?? string.Empty,
+                Description = playlist.Description,
+                TrackCount = playlist.Tracks?.Total ?? 0,
+                ImageUrl = playlist.Images?.FirstOrDefault()?.Url,
+                Owner = playlist.Owner?.DisplayName ?? string.Empty,
+                IsPublic = playlist.Public ?? false,
+                Uri = playlist.Uri ?? string.Empty
+            };
+
+            _logger.LogInformation("Retrieved playlist: {PlaylistName}", playlistInfo.Name);
+            return playlistInfo;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting playlist {PlaylistId}", playlistId);
+            return null;
+        }
+    }
+
+    public async Task<List<AlbumInfo>> GetUserAlbumsAsync()
+    {
+        if (_spotify == null) return new List<AlbumInfo>();
+
+        try
+        {
+            var albums = new List<AlbumInfo>();
+            var currentAlbums = await _spotify.Library.GetAlbums();
+
+            await foreach (var savedAlbum in _spotify.Paginate(currentAlbums))
+            {
+                var album = savedAlbum.Album;
+                albums.Add(new AlbumInfo
+                {
+                    Id = album.Id ?? string.Empty,
+                    Name = album.Name ?? string.Empty,
+                    Artist = string.Join(", ", album.Artists.Select(a => a.Name)),
+                    TrackCount = album.TotalTracks,
+                    ImageUrl = album.Images?.FirstOrDefault()?.Url,
+                    ReleaseDate = album.ReleaseDate ?? string.Empty,
+                    AlbumType = album.AlbumType ?? string.Empty,
+                    Uri = album.Uri ?? string.Empty
+                });
+            }
+
+            _logger.LogInformation("Retrieved {Count} albums", albums.Count);
+            return albums;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user albums");
+            return new List<AlbumInfo>();
+        }
+    }
+
+    public async Task<AlbumInfo?> GetAlbumAsync(string albumId)
+    {
+        if (_spotify == null) return null;
+
+        try
+        {
+            var album = await _spotify.Albums.Get(albumId);
+            if (album == null) return null;
+
+            var albumInfo = new AlbumInfo
+            {
+                Id = album.Id ?? string.Empty,
+                Name = album.Name ?? string.Empty,
+                Artist = string.Join(", ", album.Artists.Select(a => a.Name)),
+                TrackCount = album.TotalTracks,
+                ImageUrl = album.Images?.FirstOrDefault()?.Url,
+                ReleaseDate = album.ReleaseDate ?? string.Empty,
+                AlbumType = album.AlbumType ?? string.Empty,
+                Uri = album.Uri ?? string.Empty
+            };
+
+            _logger.LogInformation("Retrieved album: {AlbumName}", albumInfo.Name);
+            return albumInfo;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting album {AlbumId}", albumId);
+            return null;
+        }
+    }
 }

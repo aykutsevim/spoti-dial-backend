@@ -16,6 +16,8 @@ public class MqttSettings
     public string CommandTopic { get; set; } = "spotidial/commands";
     public string StatusTopic { get; set; } = "spotidial/status";
     public string ImageTopic { get; set; } = "spotidial/image";
+    public string PlaylistTopic { get; set; } = "spotidial/playlists";
+    public string AlbumTopic { get; set; } = "spotidial/albums";
 }
 
 public class SpotifySettings

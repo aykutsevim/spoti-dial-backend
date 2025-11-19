@@ -161,6 +161,52 @@ public class MqttService
         }
     }
 
+    public async Task PublishPlaylistsAsync(List<PlaylistInfo> playlists)
+    {
+        if (_mqttClient == null || !_mqttClient.IsConnected) return;
+
+        try
+        {
+            var payload = JsonSerializer.Serialize(playlists);
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(_settings.PlaylistTopic)
+                .WithPayload(payload)
+                .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
+                .WithRetainFlag(false)
+                .Build();
+
+            await _mqttClient.EnqueueAsync(message);
+            _logger.LogInformation("Published {Count} playlists to {Topic}", playlists.Count, _settings.PlaylistTopic);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error publishing playlists");
+        }
+    }
+
+    public async Task PublishAlbumsAsync(List<AlbumInfo> albums)
+    {
+        if (_mqttClient == null || !_mqttClient.IsConnected) return;
+
+        try
+        {
+            var payload = JsonSerializer.Serialize(albums);
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(_settings.AlbumTopic)
+                .WithPayload(payload)
+                .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
+                .WithRetainFlag(false)
+                .Build();
+
+            await _mqttClient.EnqueueAsync(message);
+            _logger.LogInformation("Published {Count} albums to {Topic}", albums.Count, _settings.AlbumTopic);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error publishing albums");
+        }
+    }
+
     public async Task DisconnectAsync()
     {
         if (_mqttClient != null)

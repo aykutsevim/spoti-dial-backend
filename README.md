@@ -50,10 +50,16 @@ spoti-dial-backend/
 │   ├── Program.cs        # Application entry point
 │   ├── appsettings.json  # Application configuration
 │   └── SpotiDialBackend.csproj
+├── Firmware/             # ESP32 M5Dial firmware (NEW!)
+│   ├── src/              # Firmware source code
+│   ├── include/          # Header files and configuration
+│   ├── platformio.ini    # PlatformIO configuration
+│   └── README.md         # Firmware documentation
 ├── CLIClient/            # MQTT testing tool
 │   └── CLIClient         # Command-line client for testing backend
 ├── Tools/                # Helper utilities
 │   └── SpotifyAuthHelper # OAuth token generation tool
+├── mosquitto/            # MQTT broker configuration
 ├── .env                  # Environment configuration (not in git)
 ├── .env.example          # Environment template
 ├── docker-compose.yml    # Docker orchestration
@@ -249,10 +255,45 @@ The backend publishes song information to `spotidial/status`:
 
 Album artwork is published as JPEG binary data to `spotidial/image`.
 
+## Firmware Development
+
+### M5Dial Firmware
+
+The `Firmware/` directory contains the ESP32-S3 firmware for the M5Dial device. This firmware provides:
+
+- 🎵 Real-time now playing display with LVGL UI
+- 🎨 Album artwork display
+- 🔊 Volume control via rotary encoder
+- 📋 Playlist and album browsing
+- ⏯️ Playback controls
+- 📶 WiFi and MQTT connectivity
+
+**Quick Start:**
+
+```bash
+cd Firmware
+
+# Install PlatformIO if not already installed
+# Then build and upload
+pio run --target upload
+
+# Monitor serial output
+pio device monitor
+```
+
+**Configuration:**
+
+1. Edit `Firmware/include/config.h` to set your MQTT broker IP
+2. On first boot, connect to "M5Dial-SpotiDial" WiFi AP
+3. Configure your WiFi credentials via captive portal
+
+For detailed firmware documentation, see [Firmware/README.md](Firmware/README.md).
+
 ## Architecture
 
 ```
 ESP32 M5Dial ←→ MQTT Broker ←→ Spoti-Dial Backend ←→ Spotify API
+    (Firmware)    (Mosquitto)      (C# .NET)        (Web API)
 ```
 
 The backend acts as a mediator, translating physical dial interactions into Spotify API calls and pushing playback information back to the device display.

@@ -108,7 +108,10 @@ class Program
             {
                 Scopes.UserReadPlaybackState,
                 Scopes.UserModifyPlaybackState,
-                Scopes.UserReadCurrentlyPlaying
+                Scopes.UserReadCurrentlyPlaying,
+                Scopes.PlaylistReadPrivate,
+                Scopes.PlaylistReadCollaborative,
+                Scopes.UserLibraryRead
             }
         };
 
