@@ -93,7 +93,12 @@ public class MqttService
 
             if (args.ApplicationMessage.Topic == _settings.CommandTopic)
             {
-                var command = JsonSerializer.Deserialize<DeviceCommand>(payload);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var command = JsonSerializer.Deserialize<DeviceCommand>(payload, options);
                 if (command != null)
                 {
                     _logger.LogInformation("Command received: {Command} {Parameter}",

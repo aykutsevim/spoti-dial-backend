@@ -40,11 +40,31 @@ The application supports the following Spotify commands:
 - **API**: Spotify Web API
 - **Containerization**: Docker & Docker Compose
 
+## Project Structure
+
+```
+spoti-dial-backend/
+├── Backend/              # Main backend application
+│   ├── Services/         # Service implementations (MQTT, Spotify, etc.)
+│   ├── Models/           # Data models
+│   ├── Program.cs        # Application entry point
+│   ├── appsettings.json  # Application configuration
+│   └── SpotiDialBackend.csproj
+├── CLIClient/            # MQTT testing tool
+│   └── CLIClient         # Command-line client for testing backend
+├── Tools/                # Helper utilities
+│   └── SpotifyAuthHelper # OAuth token generation tool
+├── .env                  # Environment configuration (not in git)
+├── .env.example          # Environment template
+├── docker-compose.yml    # Docker orchestration
+└── README.md             # This file
+```
+
 ## Getting Started
 
 ### Prerequisites
 
-- Docker and Docker Compose installed
+- .NET 10 SDK or Docker and Docker Compose installed
 - An MQTT broker (e.g., Mosquitto) running and accessible
 - A Spotify Premium account
 - Spotify Developer application credentials
@@ -67,24 +87,34 @@ nano .env
 2. Click "Create an App"
 3. Fill in the app name and description
 4. Copy the **Client ID** and **Client Secret** to your `.env` file
-5. Add `http://localhost:8888/callback` to Redirect URIs in app settings
+5. Add `http://localhost:5000/callback` to Redirect URIs in app settings
 
 #### 3. Obtain Spotify Refresh Token
 
-You need to obtain a refresh token through the OAuth2 authorization flow:
+**Easy Method - Use the Auth Helper Tool:**
+
+We provide a helper tool to easily obtain your Spotify refresh token:
 
 ```bash
-# You can use the Spotify API documentation or tools like:
-# - https://github.com/spotify/web-api-auth-examples
-# - Authorization Code Flow example
+cd Tools
+dotnet run
 ```
+
+The tool will:
+1. Prompt you for your Client ID and Client Secret
+2. Open your browser for Spotify authorization
+3. Display your refresh token
+
+Copy the refresh token to your `.env` file.
+
+**Manual Method:**
+
+You can also obtain a refresh token manually using the OAuth2 authorization flow. See the [Spotify API documentation](https://developer.spotify.com/documentation/web-api/tutorials/code-flow) or use tools like the [Spotify Web API Auth Examples](https://github.com/spotify/web-api-auth-examples).
 
 Required Spotify scopes:
 - `user-read-playback-state`
 - `user-modify-playback-state`
 - `user-read-currently-playing`
-
-Add the refresh token to your `.env` file.
 
 #### 4. Configure MQTT Broker
 
@@ -118,12 +148,58 @@ docker-compose down
 If you prefer to run without Docker:
 
 ```bash
+# From the Backend directory
+cd Backend
+
 # Restore dependencies
 dotnet restore
 
 # Run the application
 dotnet run
 ```
+
+Or from the root directory:
+
+```bash
+# Build and run using the solution file
+dotnet build spoti-dial-backend.sln
+dotnet run --project Backend/SpotiDialBackend.csproj
+```
+
+## Testing the Backend
+
+### Using the CLI Client
+
+The CLIClient is a command-line tool for testing the backend without needing the physical M5Dial device.
+
+**Quick Start:**
+
+```bash
+cd CLIClient
+
+# See all available commands
+dotnet run -- --help
+
+# Test playback control
+dotnet run -- play
+dotnet run -- pause
+dotnet run -- next
+
+# Test volume control
+dotnet run -- set-volume 75
+dotnet run -- volume-up
+
+# Monitor status updates
+dotnet run -- monitor
+```
+
+**With custom MQTT broker:**
+
+```bash
+dotnet run -- play --host mqtt.example.com --port 1883 -u username -pw password
+```
+
+For detailed usage and all available commands, see [CLIClient/README.md](CLIClient/README.md).
 
 ## MQTT Command Format
 

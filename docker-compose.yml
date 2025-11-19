@@ -3,7 +3,7 @@ version: '3.8'
 services:
   spotidial-backend:
     build:
-      context: .
+      context: ./Backend
       dockerfile: Dockerfile
     container_name: spotidial-backend
     restart: unless-stopped
@@ -30,20 +30,20 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Optional: Include MQTT broker if you don't have one running
-  # mosquitto:
-  #   image: eclipse-mosquitto:2
-  #   container_name: mosquitto
-  #   restart: unless-stopped
-  #   ports:
-  #     - "1883:1883"
-  #     - "9001:9001"
-  #   volumes:
-  #     - ./mosquitto/config:/mosquitto/config
-  #     - ./mosquitto/data:/mosquitto/data
-  #     - ./mosquitto/log:/mosquitto/log
-  #   networks:
-  #     - spotidial-network
+  # MQTT Broker (Mosquitto)
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - spotidial-network
 
 networks:
   spotidial-network:
