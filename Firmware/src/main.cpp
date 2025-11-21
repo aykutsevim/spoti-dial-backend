@@ -4,6 +4,7 @@
 #include "config.h"
 #include "mqtt/mqtt_client.h"
 #include "ui/ui_manager.h"
+#include "lv_display.h"
 
 // Global objects
 MQTTClient mqttClient;
@@ -27,14 +28,25 @@ void onPlaylistsUpdate(JsonArray playlists);
 void onAlbumsUpdate(JsonArray albums);
 
 void setup() {
-    // Initialize M5Dial
-    auto cfg = M5.config();
-    M5Dial.begin(cfg, true, false);
-
-    // Initialize Serial for debugging
+    // Initialize Serial for debugging (FIRST!)
     Serial.begin(115200);
+    delay(500);  // Give serial time to initialize
     Serial.println("\n\n" APP_NAME " v" APP_VERSION);
     Serial.println("================================");
+
+    // Initialize M5Dial
+    Serial.println("Initializing M5Dial...");
+    auto cfg = M5.config();
+    M5Dial.begin(cfg, true, false);
+    Serial.println("M5Dial initialized");
+
+    // Initialize LVGL with M5Dial display
+    Serial.println("Initializing LVGL...");
+    if (!lv_display_init()) {
+        Serial.println("Failed to initialize LVGL!");
+        while (1) delay(100);
+    }
+    Serial.println("LVGL initialized");
 
     // Initialize UI
     Serial.println("Initializing UI...");
@@ -42,10 +54,16 @@ void setup() {
         Serial.println("Failed to initialize UI!");
         while (1) delay(100);
     }
+    Serial.println("UI initialized");
 
-    // Setup WiFi
+    // Show splash screen
+    uiManager.showScreen(SCREEN_SPLASH);
+    Serial.println("Splash screen shown");
+
+    // Setup WiFi (delayed after UI is ready)
     Serial.println("Setting up WiFi...");
     setupWiFi();
+    Serial.println("WiFi setup complete");
 
     // Initialize MQTT
     Serial.println("Connecting to MQTT broker...");
@@ -76,34 +94,39 @@ void loop() {
     // Update UI
     uiManager.update();
 
+    // Update LVGL tick timer (for animations and timers)
+    lv_tick_inc(5);
+
     // Small delay to prevent overwhelming the system
     delay(5);
 }
 
 void setupWiFi() {
-    // Set WiFiManager timeout
-    wifiManager.setConfigPortalTimeout(180);
+    // Set WiFiManager timeout to 30 seconds (shorter than 180)
+    wifiManager.setConfigPortalTimeout(30);
+
+    // Reduce time for WiFi connection attempts
+    wifiManager.setConnectTimeout(20);
 
     // Custom parameters for MQTT broker (optional)
     WiFiManagerParameter custom_mqtt_broker("broker", "MQTT Broker IP", MQTT_BROKER, 40);
     wifiManager.addParameter(&custom_mqtt_broker);
 
-    // Try to connect with saved credentials
-    if (!wifiManager.autoConnect("M5Dial-SpotiDial")) {
-        Serial.println("Failed to connect and hit timeout");
-        ESP.restart();
-    }
+    // Try to connect with saved credentials (don't restart on failure)
+    if (wifiManager.autoConnect("M5Dial-SpotiDial")) {
+        Serial.println("WiFi connected!");
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
 
-    Serial.println("WiFi connected!");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-
-    // Save MQTT broker if changed
-    String mqttBroker = custom_mqtt_broker.getValue();
-    if (mqttBroker.length() > 0) {
-        Serial.print("MQTT Broker: ");
-        Serial.println(mqttBroker);
-        // TODO: Save to preferences/EEPROM
+        // Save MQTT broker if changed
+        String mqttBroker = custom_mqtt_broker.getValue();
+        if (mqttBroker.length() > 0) {
+            Serial.print("MQTT Broker: ");
+            Serial.println(mqttBroker);
+            // TODO: Save to preferences/EEPROM
+        }
+    } else {
+        Serial.println("WiFi connection failed - will try again in background");
     }
 }
 

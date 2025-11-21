@@ -11,7 +11,7 @@
 
 // Memory settings
 #define LV_MEM_CUSTOM 0
-#define LV_MEM_SIZE (48U * 1024U)  // 48KB for LVGL
+#define LV_MEM_SIZE (64U * 1024U)  // 128KB for LVGL - increased for display operations
 
 // Display settings
 #define LV_HOR_RES_MAX 240
@@ -25,15 +25,15 @@
 #define LV_LAYER_SIMPLE_BUF_SIZE (24 * 1024)
 
 // Font settings
-#define LV_FONT_MONTSERRAT_8 1
-#define LV_FONT_MONTSERRAT_10 1
-#define LV_FONT_MONTSERRAT_12 1
+#define LV_FONT_MONTSERRAT_8 0
+#define LV_FONT_MONTSERRAT_10 0
+#define LV_FONT_MONTSERRAT_12 0
 #define LV_FONT_MONTSERRAT_14 1
-#define LV_FONT_MONTSERRAT_16 1
-#define LV_FONT_MONTSERRAT_18 1
-#define LV_FONT_MONTSERRAT_20 1
-#define LV_FONT_MONTSERRAT_22 1
-#define LV_FONT_MONTSERRAT_24 1
+#define LV_FONT_MONTSERRAT_16 0
+#define LV_FONT_MONTSERRAT_18 0
+#define LV_FONT_MONTSERRAT_20 0
+#define LV_FONT_MONTSERRAT_22 0
+#define LV_FONT_MONTSERRAT_24 0
 
 // Theme settings
 #define LV_USE_THEME_DEFAULT 1

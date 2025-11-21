@@ -75,7 +75,7 @@ void UIManager::createSplashScreen() {
     // App name label
     lv_obj_t* nameLabel = lv_label_create(_splashScreen);
     lv_label_set_text(nameLabel, APP_NAME);
-    lv_obj_set_style_text_font(nameLabel, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_font(nameLabel, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(nameLabel, lv_color_white(), 0);
     lv_obj_align(nameLabel, LV_ALIGN_CENTER, 0, -20);
 
@@ -105,7 +105,7 @@ void UIManager::createNowPlayingScreen() {
     // Track name
     _trackLabel = lv_label_create(_nowPlayingScreen);
     lv_label_set_text(_trackLabel, "No track");
-    lv_obj_set_style_text_font(_trackLabel, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_font(_trackLabel, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(_trackLabel, lv_color_white(), 0);
     lv_obj_align(_trackLabel, LV_ALIGN_CENTER, 0, 50);
     lv_label_set_long_mode(_trackLabel, LV_LABEL_LONG_SCROLL_CIRCULAR);
@@ -114,7 +114,7 @@ void UIManager::createNowPlayingScreen() {
     // Artist name
     _artistLabel = lv_label_create(_nowPlayingScreen);
     lv_label_set_text(_artistLabel, "No artist");
-    lv_obj_set_style_text_font(_artistLabel, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_font(_artistLabel, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(_artistLabel, lv_color_make(180, 180, 180), 0);
     lv_obj_align(_artistLabel, LV_ALIGN_CENTER, 0, 70);
     lv_label_set_long_mode(_artistLabel, LV_LABEL_LONG_SCROLL_CIRCULAR);
@@ -129,14 +129,14 @@ void UIManager::createNowPlayingScreen() {
     // Progress label (time)
     _progressLabel = lv_label_create(_nowPlayingScreen);
     lv_label_set_text(_progressLabel, "0:00 / 0:00");
-    lv_obj_set_style_text_font(_progressLabel, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_font(_progressLabel, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(_progressLabel, lv_color_make(128, 128, 128), 0);
     lv_obj_align(_progressLabel, LV_ALIGN_BOTTOM_MID, 0, -10);
 
     // Play/Pause icon
     _playPauseIcon = lv_label_create(_nowPlayingScreen);
     lv_label_set_text(_playPauseIcon, LV_SYMBOL_PLAY);
-    lv_obj_set_style_text_font(_playPauseIcon, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_font(_playPauseIcon, &lv_font_montserrat_14, 0);
     lv_obj_align(_playPauseIcon, LV_ALIGN_TOP_MID, 0, 10);
 }
 
@@ -148,7 +148,7 @@ void UIManager::createPlaylistsScreen() {
     // Title
     lv_obj_t* titleLabel = lv_label_create(_playlistsScreen);
     lv_label_set_text(titleLabel, "Playlists");
-    lv_obj_set_style_text_font(titleLabel, &lv_font_montserrat_18, 0);
+    lv_obj_set_style_text_font(titleLabel, &lv_font_montserrat_14, 0);
     lv_obj_align(titleLabel, LV_ALIGN_TOP_MID, 0, 10);
 
     // Roller for playlist list
@@ -166,7 +166,7 @@ void UIManager::createAlbumsScreen() {
     // Similar to playlists screen
     lv_obj_t* titleLabel = lv_label_create(_albumsScreen);
     lv_label_set_text(titleLabel, "Albums");
-    lv_obj_set_style_text_font(titleLabel, &lv_font_montserrat_18, 0);
+    lv_obj_set_style_text_font(titleLabel, &lv_font_montserrat_14, 0);
     lv_obj_align(titleLabel, LV_ALIGN_TOP_MID, 0, 10);
 }
 
@@ -177,7 +177,7 @@ void UIManager::createSettingsScreen() {
 
     lv_obj_t* titleLabel = lv_label_create(_settingsScreen);
     lv_label_set_text(titleLabel, "Settings");
-    lv_obj_set_style_text_font(titleLabel, &lv_font_montserrat_18, 0);
+    lv_obj_set_style_text_font(titleLabel, &lv_font_montserrat_14, 0);
     lv_obj_align(titleLabel, LV_ALIGN_TOP_MID, 0, 10);
 }
 
@@ -222,7 +222,7 @@ void UIManager::showVolumeOverlay(int volume) {
         lv_obj_set_style_radius(_volumeOverlay, 10, 0);
 
         _volumeLabel = lv_label_create(_volumeOverlay);
-        lv_obj_set_style_text_font(_volumeLabel, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(_volumeLabel, &lv_font_montserrat_14, 0);
         lv_obj_align(_volumeLabel, LV_ALIGN_CENTER, 0, 0);
     }
 
