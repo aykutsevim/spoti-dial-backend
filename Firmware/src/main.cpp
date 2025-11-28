@@ -85,6 +85,9 @@ void setup() {
 void loop() {
     M5Dial.update();
 
+    // Handle WiFiManager config portal (needed when in AP mode)
+    wifiManager.process();
+
     // Handle MQTT
     mqttClient.loop();
 
@@ -102,8 +105,9 @@ void loop() {
 }
 
 void setupWiFi() {
-    // Set WiFiManager timeout to 30 seconds (shorter than 180)
-    wifiManager.setConfigPortalTimeout(30);
+    // Set WiFiManager config portal timeout to 5 minutes (300 seconds)
+    // This gives users enough time to connect via AP and provide WiFi credentials
+    wifiManager.setConfigPortalTimeout(300);
 
     // Reduce time for WiFi connection attempts
     wifiManager.setConnectTimeout(20);

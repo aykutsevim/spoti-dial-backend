@@ -79,3 +79,7 @@ artifacts/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+#Mosquitto
+/mosquitto/data/
+/mosquitto/log/
