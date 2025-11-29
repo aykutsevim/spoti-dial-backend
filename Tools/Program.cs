@@ -5,8 +5,8 @@ namespace SpotifyAuthHelper;
 
 class Program
 {
-    private const int CallbackPort = 5000;
-    private static readonly string RedirectUri = $"http://localhost:{CallbackPort}/callback";
+    private const int CallbackPort = 8888;
+    private static readonly string RedirectUri = $"http://127.0.0.1:{CallbackPort}/callback";
     private static readonly EmbedIOAuthServer _server = new(new Uri(RedirectUri), CallbackPort);
 
     static async Task Main(string[] args)
