@@ -17,7 +17,7 @@
 // New-NetFirewallRule -DisplayName "Allow MQTT 1883" -Direction Inbound -Protocol TCP -LocalPort 1883 -Action Allow
 #define MQTT_BROKER "159.146.31.32"  // Change to your MQTT broker IP
 #define MQTT_PORT 1883
-#define MQTT_CLIENT_ID "SpotiDialBackend"
+#define MQTT_CLIENT_ID_PREFIX "SpotiDial-M5"  // Will append MAC address for uniqueness
 #define MQTT_USERNAME "mqtttest"
 #define MQTT_PASSWORD "mqtttest"
 

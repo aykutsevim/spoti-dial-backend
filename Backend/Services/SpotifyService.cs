@@ -285,6 +285,17 @@ public class SpotifyService
             await _spotify.Player.ResumePlayback();
             _logger.LogInformation("Playback resumed");
         }
+        catch (SpotifyAPI.Web.APIException apiEx)
+        {
+            if (apiEx.Message.Contains("Restriction violated") || apiEx.Message.Contains("NO_ACTIVE_DEVICE"))
+            {
+                _logger.LogWarning("Cannot resume playback: No active Spotify device found or Spotify Premium required. Please start playback on a Spotify device first.");
+            }
+            else
+            {
+                _logger.LogError(apiEx, "Spotify API error while resuming playback");
+            }
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error resuming playback");

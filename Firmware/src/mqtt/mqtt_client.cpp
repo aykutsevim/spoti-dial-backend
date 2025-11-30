@@ -42,11 +42,21 @@ bool MQTTClient::isConnected() {
 bool MQTTClient::reconnect() {
     Serial.print("Connecting to MQTT broker...");
 
+    // Create unique client ID using MAC address to avoid conflicts with backend
+    uint8_t mac[6];
+    WiFi.macAddress(mac);
+    char uniqueClientId[40];
+    snprintf(uniqueClientId, sizeof(uniqueClientId), "%s-%02X%02X%02X",
+             MQTT_CLIENT_ID_PREFIX, mac[3], mac[4], mac[5]);
+
+    Serial.print(" Client ID: ");
+    Serial.println(uniqueClientId);
+
     bool connected = false;
     if (strlen(MQTT_USERNAME) > 0) {
-        connected = _mqttClient.connect(MQTT_CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD);
+        connected = _mqttClient.connect(uniqueClientId, MQTT_USERNAME, MQTT_PASSWORD);
     } else {
-        connected = _mqttClient.connect(MQTT_CLIENT_ID);
+        connected = _mqttClient.connect(uniqueClientId);
     }
 
     if (connected) {
