@@ -34,7 +34,9 @@ class Program
                     { "AppSettings:Spotify:ClientId", Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID") ?? "" },
                     { "AppSettings:Spotify:ClientSecret", Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET") ?? "" },
                     { "AppSettings:Spotify:RefreshToken", Environment.GetEnvironmentVariable("SPOTIFY_REFRESH_TOKEN") ?? "" },
-                    { "AppSettings:Spotify:PollingIntervalMs", Environment.GetEnvironmentVariable("SPOTIFY_POLLING_INTERVAL_MS") ?? "1000" }
+                    { "AppSettings:Spotify:PollingIntervalMs", Environment.GetEnvironmentVariable("SPOTIFY_POLLING_INTERVAL_MS") ?? "1000" },
+                    { "AppSettings:Spotify:OAuthCallbackPort", Environment.GetEnvironmentVariable("SPOTIFY_OAUTH_CALLBACK_PORT") ?? "8888" },
+                    { "AppSettings:Spotify:OAuthRedirectUri", Environment.GetEnvironmentVariable("SPOTIFY_OAUTH_REDIRECT_URI") ?? "" }
                 };
 
                 config.AddInMemoryCollection(envVarMappings!);
@@ -45,6 +47,7 @@ class Program
                 services.Configure<AppSettings>(context.Configuration.GetSection("AppSettings"));
 
                 // Services
+                services.AddSingleton<TokenStorageService>();
                 services.AddSingleton<MqttService>();
                 services.AddSingleton<SpotifyService>();
                 services.AddSingleton<ImageProcessingService>();

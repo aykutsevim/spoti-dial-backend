@@ -26,4 +26,12 @@ public class SpotifySettings
     public string ClientSecret { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
     public int PollingIntervalMs { get; set; } = 1000;
+    public int OAuthCallbackPort { get; set; } = 8888;
+
+    private string? _oauthRedirectUri;
+    public string OAuthRedirectUri
+    {
+        get => _oauthRedirectUri ?? $"http://127.0.0.1:{OAuthCallbackPort}/callback";
+        set => _oauthRedirectUri = value;
+    }
 }

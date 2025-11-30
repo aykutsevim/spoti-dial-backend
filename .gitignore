@@ -27,6 +27,9 @@ bld/
 .env.local
 .env.*.local
 
+# Spotify token storage
+spotify_token.json
+
 # User-specific files
 *.rsuser
 *.suo

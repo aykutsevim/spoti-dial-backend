@@ -6,7 +6,7 @@
 // ============================================
 // These will be set via WiFiManager on first boot
 // Default fallback values
-#define WIFI_SSID "FiberHGW_ZTA5NC"
+#define WIFI_SSID "TitaniumMountain"
 #define WIFI_PASSWORD "kitle1les@B1ack"
 #define WIFI_TIMEOUT_MS 20000
 
@@ -15,7 +15,7 @@
 // ============================================
 // Make sure to allow MQTT port through firewall if needed
 // New-NetFirewallRule -DisplayName "Allow MQTT 1883" -Direction Inbound -Protocol TCP -LocalPort 1883 -Action Allow
-#define MQTT_BROKER "192.168.1.108"  // Change to your MQTT broker IP
+#define MQTT_BROKER "159.146.31.32"  // Change to your MQTT broker IP
 #define MQTT_PORT 1883
 #define MQTT_CLIENT_ID "SpotiDialBackend"
 #define MQTT_USERNAME "mqtttest"

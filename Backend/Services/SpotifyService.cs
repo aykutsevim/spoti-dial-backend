@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SpotifyAPI.Web;
+using SpotifyAPI.Web.Auth;
 using SpotiDialBackend.Models;
 
 namespace SpotiDialBackend.Services;
@@ -9,39 +10,201 @@ public class SpotifyService
 {
     private readonly ILogger<SpotifyService> _logger;
     private readonly SpotifySettings _settings;
+    private readonly TokenStorageService _tokenStorage;
     private SpotifyClient? _spotify;
     private string? _currentTrackId;
+    private string? _refreshToken;
 
     public event Action<SongInfo>? OnSongChanged;
 
-    public SpotifyService(ILogger<SpotifyService> logger, IOptions<AppSettings> settings)
+    public SpotifyService(
+        ILogger<SpotifyService> logger,
+        IOptions<AppSettings> settings,
+        TokenStorageService tokenStorage)
     {
         _logger = logger;
         _settings = settings.Value.Spotify;
+        _tokenStorage = tokenStorage;
     }
 
     public async Task InitializeAsync()
     {
         try
         {
-            _logger.LogInformation("Initializing Spotify client...");
+            _logger.LogInformation("Initializing Spotify client with automatic token refresh...");
 
-            var config = SpotifyClientConfig.CreateDefault();
-            var request = new AuthorizationCodeRefreshRequest(
+            // Try to get refresh token from storage first
+            _refreshToken = await _tokenStorage.GetRefreshTokenAsync();
+
+            // If no stored token and no env token, initiate OAuth flow
+            if (string.IsNullOrEmpty(_refreshToken) && string.IsNullOrEmpty(_settings.RefreshToken))
+            {
+                _logger.LogWarning("No refresh token found. Starting OAuth authorization flow...");
+                _refreshToken = await PerformOAuthFlowAsync();
+
+                if (string.IsNullOrEmpty(_refreshToken))
+                {
+                    throw new Exception("Failed to obtain refresh token from OAuth flow");
+                }
+
+                // Save the refresh token for future use
+                await _tokenStorage.SaveRefreshTokenAsync(_refreshToken);
+            }
+            else if (!string.IsNullOrEmpty(_settings.RefreshToken))
+            {
+                // Use refresh token from environment if available
+                _logger.LogInformation("Using refresh token from configuration");
+                _refreshToken = _settings.RefreshToken;
+
+                // Save it to storage for future use
+                await _tokenStorage.SaveRefreshTokenAsync(_refreshToken);
+            }
+
+            // Create authenticator with automatic token refresh
+            var authenticator = new AuthorizationCodeAuthenticator(
                 _settings.ClientId,
                 _settings.ClientSecret,
-                _settings.RefreshToken
+                new AuthorizationCodeRefreshResponse
+                {
+                    RefreshToken = _refreshToken,
+                    AccessToken = "initial", // Will be refreshed immediately
+                    ExpiresIn = 0 // Force immediate refresh
+                }
             );
 
-            var response = await new OAuthClient(config).RequestToken(request);
-            _spotify = new SpotifyClient(config.WithToken(response.AccessToken));
+            // Set up token refresh callback
+            authenticator.TokenRefreshed += (sender, response) =>
+            {
+                _logger.LogInformation("Spotify access token refreshed successfully");
+            };
 
-            _logger.LogInformation("Spotify client initialized successfully");
+            var config = SpotifyClientConfig
+                .CreateDefault()
+                .WithAuthenticator(authenticator);
+
+            _spotify = new SpotifyClient(config);
+
+            _logger.LogInformation("Spotify client initialized successfully with automatic token refresh");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to initialize Spotify client");
             throw;
+        }
+    }
+
+    private async Task<string?> PerformOAuthFlowAsync()
+    {
+        var tcs = new TaskCompletionSource<string?>();
+        EmbedIOAuthServer? server = null;
+
+        try
+        {
+            _logger.LogInformation("Starting OAuth server on port {Port}...", _settings.OAuthCallbackPort);
+
+            server = new EmbedIOAuthServer(
+                new Uri(_settings.OAuthRedirectUri),
+                _settings.OAuthCallbackPort
+            );
+
+            server.AuthorizationCodeReceived += async (sender, response) =>
+            {
+                await server.Stop();
+
+                try
+                {
+                    var tokenResponse = await new OAuthClient().RequestToken(
+                        new AuthorizationCodeTokenRequest(
+                            _settings.ClientId,
+                            _settings.ClientSecret,
+                            response.Code,
+                            new Uri(_settings.OAuthRedirectUri)
+                        )
+                    );
+
+                    _logger.LogInformation("OAuth authorization successful!");
+                    tcs.TrySetResult(tokenResponse.RefreshToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error exchanging authorization code for token");
+                    tcs.TrySetResult(null);
+                }
+            };
+
+            server.ErrorReceived += (sender, error, state) =>
+            {
+                _logger.LogError("OAuth authorization error: {Error}", error);
+                tcs.TrySetResult(null);
+                return Task.CompletedTask;
+            };
+
+            await server.Start();
+
+            var loginRequest = new LoginRequest(
+                new Uri(_settings.OAuthRedirectUri),
+                _settings.ClientId,
+                LoginRequest.ResponseType.Code
+            )
+            {
+                Scope = new[]
+                {
+                    Scopes.UserReadPlaybackState,
+                    Scopes.UserModifyPlaybackState,
+                    Scopes.UserReadCurrentlyPlaying,
+                    Scopes.PlaylistReadPrivate,
+                    Scopes.PlaylistReadCollaborative,
+                    Scopes.UserLibraryRead
+                }
+            };
+
+            var uri = loginRequest.ToUri();
+
+            _logger.LogWarning("========================================");
+            _logger.LogWarning("SPOTIFY AUTHORIZATION REQUIRED");
+            _logger.LogWarning("========================================");
+            _logger.LogWarning("Please open the following URL in your browser to authorize:");
+            _logger.LogWarning("{AuthUrl}", uri);
+            _logger.LogWarning("========================================");
+            _logger.LogWarning("IMPORTANT: Make sure the redirect URI is added to your Spotify app settings:");
+            _logger.LogWarning("Go to: https://developer.spotify.com/dashboard");
+            _logger.LogWarning("Edit your app > Settings > Redirect URIs > Add: {RedirectUri}", _settings.OAuthRedirectUri);
+            _logger.LogWarning("========================================");
+
+            // Try to open browser automatically
+            try
+            {
+                BrowserUtil.Open(uri);
+                _logger.LogInformation("Browser opened automatically for authorization");
+            }
+            catch
+            {
+                _logger.LogWarning("Could not open browser automatically. Please open the URL manually.");
+            }
+
+            // Wait for authorization with timeout
+            var timeoutTask = Task.Delay(TimeSpan.FromMinutes(5));
+            var completedTask = await Task.WhenAny(tcs.Task, timeoutTask);
+
+            if (completedTask == timeoutTask)
+            {
+                _logger.LogError("OAuth authorization timed out after 5 minutes");
+                return null;
+            }
+
+            return await tcs.Task;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during OAuth flow");
+            return null;
+        }
+        finally
+        {
+            if (server != null)
+            {
+                await server.Stop();
+            }
         }
     }
 
