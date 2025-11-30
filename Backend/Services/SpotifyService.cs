@@ -64,11 +64,12 @@ public class SpotifyService
             var authenticator = new AuthorizationCodeAuthenticator(
                 _settings.ClientId,
                 _settings.ClientSecret,
-                new AuthorizationCodeRefreshResponse
+                new AuthorizationCodeTokenResponse
                 {
-                    RefreshToken = _refreshToken,
+                    RefreshToken = _refreshToken!,
                     AccessToken = "initial", // Will be refreshed immediately
-                    ExpiresIn = 0 // Force immediate refresh
+                    ExpiresIn = 0, // Force immediate refresh
+                    TokenType = "Bearer"
                 }
             );
 
@@ -163,24 +164,24 @@ public class SpotifyService
             _logger.LogWarning("========================================");
             _logger.LogWarning("SPOTIFY AUTHORIZATION REQUIRED");
             _logger.LogWarning("========================================");
-            _logger.LogWarning("Please open the following URL in your browser to authorize:");
+            _logger.LogWarning("HEADLESS SERVER - MANUAL AUTHORIZATION REQUIRED");
+            _logger.LogWarning("");
+            _logger.LogWarning("Step 1: Open this URL on ANY device (phone, laptop, etc.):");
             _logger.LogWarning("{AuthUrl}", uri);
+            _logger.LogWarning("");
+            _logger.LogWarning("Step 2: After authorizing, you will be redirected to:");
+            _logger.LogWarning("{RedirectUri}", _settings.OAuthRedirectUri);
+            _logger.LogWarning("");
+            _logger.LogWarning("Step 3: The authorization should complete automatically.");
+            _logger.LogWarning("        Make sure port {Port} is accessible from your device!", _settings.OAuthCallbackPort);
+            _logger.LogWarning("");
+            _logger.LogWarning("IMPORTANT: Ensure the redirect URI is in your Spotify app settings:");
+            _logger.LogWarning("  1. Go to: https://developer.spotify.com/dashboard");
+            _logger.LogWarning("  2. Edit your app > Settings > Redirect URIs");
+            _logger.LogWarning("  3. Add: {RedirectUri}", _settings.OAuthRedirectUri);
             _logger.LogWarning("========================================");
-            _logger.LogWarning("IMPORTANT: Make sure the redirect URI is added to your Spotify app settings:");
-            _logger.LogWarning("Go to: https://developer.spotify.com/dashboard");
-            _logger.LogWarning("Edit your app > Settings > Redirect URIs > Add: {RedirectUri}", _settings.OAuthRedirectUri);
+            _logger.LogWarning("Waiting for authorization (timeout: 5 minutes)...");
             _logger.LogWarning("========================================");
-
-            // Try to open browser automatically
-            try
-            {
-                BrowserUtil.Open(uri);
-                _logger.LogInformation("Browser opened automatically for authorization");
-            }
-            catch
-            {
-                _logger.LogWarning("Could not open browser automatically. Please open the URL manually.");
-            }
 
             // Wait for authorization with timeout
             var timeoutTask = Task.Delay(TimeSpan.FromMinutes(5));
