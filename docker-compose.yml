@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: spotidial-backend
     restart: unless-stopped
+    network_mode: host
     env_file:
       - .env
     environment:
@@ -22,8 +23,6 @@ services:
       - AppSettings__Spotify__ClientSecret=${SPOTIFY_CLIENT_SECRET}
       - AppSettings__Spotify__RefreshToken=${SPOTIFY_REFRESH_TOKEN}
       - AppSettings__Spotify__PollingIntervalMs=${SPOTIFY_POLLING_INTERVAL_MS:-1000}
-    networks:
-      - spotidial-network
     logging:
       driver: "json-file"
       options:
@@ -35,15 +34,11 @@ services:
     image: eclipse-mosquitto:2
     container_name: mosquitto
     restart: unless-stopped
-    ports:
-      - "1883:1883"
-      - "9001:9001"
+    network_mode: host
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
-    networks:
-      - spotidial-network
 
 networks:
   spotidial-network:
